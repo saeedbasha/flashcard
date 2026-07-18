@@ -1,0 +1,19 @@
+# Allow-list: ignore everything by default, then explicitly un-ignore
+# only what the app + its docs actually need. This protects against
+# unrelated folders (like ds-book-template-main) ever getting committed
+# by accident, even if they show up in this same Desktop folder later.
+*
+
+!index.html
+!data.js
+!README.md
+!CLAUDE.md
+!DESIGN.md
+!PRODUCT.md
+!.gitignore
+
+!assets/
+!assets/**
+
+!.claude/
+!.claude/**

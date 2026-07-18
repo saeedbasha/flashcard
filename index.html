@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Quiz Practice: neue fische</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    /* neue fische / SPICED brand tokens (from theme-nf-spiced) */
+    --orange:#FF4A11;
+    --orange-deep:#C93A0E;
+    --orange-tint:rgba(255,74,17,.08);
+    --orange-wash:rgba(255,247,244,.6);
+    --purple:#7B3FE4;
+    --purple-tint:rgba(123,63,228,.10);
+    --green:#03AC13;
+    --green-deep:#02760D;
+    --green-tint:rgba(3,172,19,.10);
+    --rose:#E94B7B;
+    --rose-deep:#C22F5C;
+    --rose-tint:rgba(233,75,123,.10);
+    --charcoal:#252629;
+    --gray-text:#6B6B6B;
+    --gray-bg:#F3F5F9;
+    --card:#FFFFFF;
+    --code-bg:#F7F7F9;
+    --border:#E3E7EE;
+    --ink:var(--charcoal);
+    --ink-muted:var(--gray-text);
+    --r-xs:4px; --r-sm:8px; --r-md:10px; --r-lg:12px; --r-pill:999px;
+    --sp-xs:4px; --sp-sm:8px; --sp-md:16px; --sp-lg:24px; --sp-xl:40px;
+    --shadow-rest:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.10);
+    --shadow-lift:0 2px 4px rgba(0,0,0,.08), 0 10px 24px rgba(0,0,0,.12);
+    --shadow-orange-glow:0 0 0 1px rgba(255,74,17,.10), 0 6px 18px rgba(255,74,17,.10);
+    --font-display:'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-body:'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:var(--gray-bg);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:var(--sp-xl) var(--sp-md) 80px;
+  }
+
+  .app{width:100%;max-width:640px;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:var(--sp-lg);
+  }
+  .topbar-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .brand{display:flex;align-items:center;gap:10px;}
+
+  button{
+    font-family:var(--font-body);font-size:14px;font-weight:600;
+    border-radius:var(--r-sm);border:1px solid var(--border);
+    padding:11px 22px;cursor:pointer;background:var(--card);color:var(--ink);
+    transition:transform .15s cubic-bezier(.16,1,.3,1), box-shadow .15s ease, background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  button:hover:not(:disabled):not(.flip-card){box-shadow:var(--shadow-lift); transform:translateY(-1px);}
+  button:active:not(:disabled){transform:translateY(0) scale(.98);}
+  button:focus-visible{outline:2px solid var(--purple); outline-offset:2px;}
+  button.primary{background:var(--orange-deep);border-color:var(--orange-deep);color:var(--card);}
+  button.primary:hover:not(:disabled){background:#AD330C;border-color:#AD330C;}
+  button.ghost{background:var(--card);}
+  button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  button.small{padding:7px 14px;font-size:12.5px;}
+
+  .label{
+    font-family:var(--font-body);font-size:.8rem;font-weight:700;
+    letter-spacing:.02em;color:var(--ink-muted);
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--r-lg);
+    box-shadow:var(--shadow-rest);
+    padding:var(--sp-lg);
+    margin-bottom:var(--sp-md);
+  }
+
+  h1.title{font-family:var(--font-display);font-weight:700;font-size:1.3rem;margin:0 0 4px;color:var(--ink);letter-spacing:-0.01em;}
+  p.lead{color:var(--ink-muted);font-size:14px;margin:0 0 var(--sp-md);line-height:1.55;}
+
+  .text-input{
+    width:100%;
+    font-family:var(--font-body);font-size:14px;
+    border:1px solid var(--border);border-radius:var(--r-md);
+    padding:11px 14px;
+    background:var(--gray-bg);color:var(--ink);
+  }
+  .text-input:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
+  .field-error{color:var(--rose-deep);font-size:13px;margin-top:8px;}
+
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;}
+  .row.between{justify-content:space-between;}
+
+  .switch-row{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--ink);cursor:pointer;user-select:none;}
+  .switch{
+    display:inline-block;position:relative;width:38px;height:22px;border-radius:var(--r-pill);
+    background:var(--border);flex-shrink:0;transition:background-color .15s ease;
+  }
+  .switch::after{
+    content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s cubic-bezier(.16,1,.3,1);
+  }
+  input.switch-input{position:absolute;opacity:0;width:38px;height:22px;margin:0;cursor:pointer;}
+  input.switch-input:checked + .switch{background:var(--orange-deep);}
+  input.switch-input:checked + .switch::after{transform:translateX(16px);}
+  input.switch-input:focus-visible + .switch{outline:2px solid var(--purple);outline-offset:2px;}
+
+  /* ---------- quiz header ---------- */
+  .quiz-header{display:flex;align-items:center;gap:var(--sp-md);margin:2px 0 var(--sp-md);}
+  .progress-track{flex:1;height:8px;background:var(--border);border-radius:var(--r-pill);overflow:hidden;}
+  .progress-fill{height:100%;background:var(--orange-deep);border-radius:var(--r-pill);
+    transition:width .5s cubic-bezier(.16,1,.3,1);}
+  .chip{
+    display:flex;align-items:center;gap:6px;font-family:var(--font-display);font-weight:700;font-size:14px;
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);
+    padding:6px 12px;box-shadow:var(--shadow-rest);white-space:nowrap;
+  }
+  .chip svg{width:15px;height:15px;flex-shrink:0;}
+  .chip.streak svg{color:var(--purple);}
+  .chip.score svg{color:var(--orange-deep);}
+
+  /* ---------- options ---------- */
+  .q-text{font-size:1.05rem;font-weight:600;line-height:1.5;margin-bottom:var(--sp-md);color:var(--ink);letter-spacing:-0.005em;}
+  .opts{display:flex;flex-direction:column;gap:9px;}
+  .opt{
+    display:flex;align-items:center;gap:12px;width:100%;
+    border:1px solid var(--border);border-radius:var(--r-md);
+    padding:13px 15px;font-size:14.5px;font-weight:500;text-align:left;
+    background:var(--card);color:var(--ink);
+  }
+  .opt:hover:not(:disabled){border-color:var(--purple);}
+  .opt .letter{
+    font-family:var(--font-display);font-weight:700;font-size:12.5px;
+    width:24px;height:24px;border-radius:var(--r-xs);background:var(--purple-tint);color:var(--purple);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .opt.correct{border-color:var(--green);background:var(--green-tint);animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+  .opt.correct .letter{background:var(--green-deep);color:var(--card);}
+  .opt.wrong{border-color:var(--rose);background:var(--rose-tint);}
+  .opt.wrong .letter{background:var(--rose-deep);color:var(--card);}
+  .opt:disabled{cursor:default;}
+  .opt.dim{opacity:.5;}
+  @keyframes popIn{0%{transform:scale(1);}45%{transform:scale(1.02);}100%{transform:scale(1);}}
+
+  .feedback{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;font-size:15px;margin-top:var(--sp-md);}
+  .feedback.correct{color:var(--green-deep);}
+  .feedback.wrong{color:var(--rose-deep);}
+  .feedback svg{width:19px;height:19px;flex-shrink:0;}
+  .explain{font-size:13.5px;color:var(--ink-muted);margin-top:6px;line-height:1.55;}
+  .explain ul{margin:6px 0;padding-left:1.2em;}
+  .explain li{margin:3px 0;}
+  .explain code, .q-text code, .opt code, .content code{
+    font-family:ui-monospace, Menlo, Consolas, monospace;font-size:.9em;
+    background:var(--code-bg);color:var(--charcoal);border-radius:var(--r-xs);padding:1px 5px;
+  }
+  .weblink{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:var(--orange-deep);}
+
+  /* neue fische's terminal-window code block chrome */
+  .code-block{
+    background:#1F1F1F;border:1px solid #0F0F0F;border-radius:var(--r-lg);
+    overflow:hidden;margin:10px 0;
+    box-shadow:0 1px 2px rgba(0,0,0,.10), 0 8px 20px rgba(0,0,0,.18), 0 18px 40px rgba(0,0,0,.10);
+  }
+  .code-titlebar{
+    height:22px;background:#0F0F0F;display:flex;align-items:center;gap:6px;padding:0 10px;
+    border-bottom:1px solid #2A2A2A;
+  }
+  .code-titlebar .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .code-titlebar .dot.red{background:#FF5F57;}
+  .code-titlebar .dot.yellow{background:#FEBC2E;}
+  .code-titlebar .dot.green{background:#28C840;}
+  .code-block pre{margin:0;padding:14px 16px;overflow-x:auto;}
+  .code-block code{
+    background:none;color:#F2F2F2;font-family:ui-monospace, Menlo, Consolas, monospace;
+    font-size:.82em;padding:0;border-radius:0;line-height:1.5;white-space:pre;
+  }
+
+  .q-image{width:100%;max-height:280px;object-fit:contain;border-radius:var(--r-md);
+    background:var(--gray-bg);margin-bottom:var(--sp-md);display:block;}
+  .face .q-image{max-height:120px;margin-bottom:10px;}
+
+  /* ---------- mode cards (home) ---------- */
+  .mode-cards{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:8px;}
+  @media (min-width:600px){ .mode-cards{grid-template-columns:1fr 1fr;} }
+  .mode-card{
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
+    padding:36px 24px;box-shadow:var(--shadow-rest);
+  }
+  .mode-card:hover{border-color:var(--purple);}
+  .mode-card-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .mode-card-icon svg{width:24px;height:24px;}
+  .mode-card.quiz{border:2px solid var(--orange);background:var(--orange-wash);box-shadow:var(--shadow-orange-glow);}
+  .mode-card.quiz .mode-card-icon{background:var(--orange-deep);color:var(--card);}
+  .mode-card.flash .mode-card-icon{background:var(--purple-tint);color:var(--purple);}
+  .mode-card-title{font-family:var(--font-display);font-weight:700;font-size:1.2rem;color:var(--ink);letter-spacing:-0.01em;}
+  .mode-card-desc{font-size:13.5px;color:var(--ink-muted);line-height:1.5;margin:0;}
+
+  /* ---------- topic list ---------- */
+  .section-title{font-family:var(--font-display);font-weight:700;font-size:1.15rem;margin:0 0 10px;color:var(--ink);letter-spacing:-0.01em;}
+  .topic-list{display:flex;flex-direction:column;gap:8px;}
+  .topic-row{
+    display:flex;align-items:center;justify-content:space-between;width:100%;
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);
+    padding:13px 15px;text-align:left;font-size:14px;
+  }
+  .topic-row:hover:not(:disabled){border-color:var(--purple);}
+  .topic-row .info{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .topic-row .t-name{font-weight:600;color:var(--ink);}
+  .topic-row .t-count{font-size:12px;color:var(--ink-muted);font-weight:400;}
+  .topic-row svg{width:17px;height:17px;color:var(--ink-muted);flex-shrink:0;margin-left:10px;}
+  .topic-row.quick{border:2px solid var(--orange);background:var(--orange-wash);box-shadow:var(--shadow-orange-glow);}
+  .topic-row.quick .t-name{color:var(--orange-deep);}
+  .topic-row.quick svg{color:var(--orange-deep);}
+
+  /* ---------- flashcard ---------- */
+  .flip-zone{perspective:1400px;margin-bottom:var(--sp-md);}
+  .flip-card{
+    position:relative;width:100%;
+    display:grid;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.16,1,.3,1);
+    background:transparent;border:none;padding:0;font-family:inherit;
+  }
+  .flip-card.flipped{transform:rotateY(180deg);}
+  .flip-card:focus-visible{outline:none;}
+  .flip-card:focus-visible .face{outline:2px solid var(--purple);outline-offset:2px;}
+  .face{
+    grid-area:1/1;min-height:220px;
+    backface-visibility:hidden;
+    background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow-rest);
+    display:flex;flex-direction:column;
+    padding:22px;text-align:left;
+  }
+  .face .label{margin-bottom:12px;}
+  .face .content{font-size:16px;line-height:1.55;flex:1;display:flex;align-items:center;color:var(--ink);}
+  .face .content-body{width:100%;white-space:pre-line;}
+  .face .content-body ul{margin:6px 0;padding-left:1.2em;}
+  .face .content-body li{margin:3px 0;}
+  .face.back{transform:rotateY(180deg);background:var(--purple-tint);}
+  .hint{text-align:center;font-size:12px;color:var(--ink-muted);margin:-4px 0 var(--sp-md);}
+
+  /* ---------- results ---------- */
+  .results-score{font-family:var(--font-display);font-size:2.75rem;font-weight:700;color:var(--green-deep);line-height:1;letter-spacing:-0.01em;}
+  .missed-item{border-top:1px solid var(--border);padding:12px 0;font-size:13.5px;}
+  .missed-item b{display:block;margin-bottom:4px;color:var(--ink);}
+
+  /* ---------- stats ---------- */
+  .stat-row{border-top:1px solid var(--border);padding:9px 0;font-size:13px;color:var(--ink-muted);display:flex;justify-content:space-between;}
+  .stat-row b{color:var(--ink);font-weight:600;}
+
+  footer{
+    text-align:center;font-size:11.5px;color:var(--ink-muted);
+    margin-top:var(--sp-lg);
+  }
+  a{color:var(--orange-deep);}
+
+  .confetti-piece{
+    position:fixed;width:7px;height:11px;border-radius:2px;
+    pointer-events:none;z-index:999;top:0;left:0;
+    animation:confettiBurst .75s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes confettiBurst{
+    0%{transform:translate(0,0) rotate(0deg);opacity:1;}
+    100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .flip-card{transition:none;}
+    .opt.correct{animation:none;}
+    button:hover:not(:disabled){transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+    </div>
+    <div class="topbar-actions">
+      <button class="ghost small" onclick="goHome()">Home</button>
+      <button class="ghost small" id="statsBtn" onclick="showStats()">Stats</button>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <footer>flashcards stay on this device · quiz scores (name, email, topic, score) are sent to your instructor</footer>
+</div>
+
+<script src="data.js?v=22"></script>
+<script>
+const ICONS = {
+  flame: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1-.5-2-1-2.5.8.2 3 1.8 3 5.5a5 5 0 0 1-10 0c0-5 3-6 5-11Z"/></svg>`,
+  star: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.6 7.1.7-5.4 4.7 1.6 7-6.2-3.7L5.8 21l1.6-7-5.4-4.7 7.1-.7Z"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="m8 12.5 2.5 2.5L16 9.5"/></svg>`,
+  cross: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="m9 9 6 6m0-6-6 6"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>`,
+  bolt: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>`
+};
+
+// Google Form submission (silent, fire-and-forget). Fill these in once the
+// form exists: actionUrl is the form's live URL with /viewform swapped for
+// /formResponse; each entries.* value is that field's entry.NNNNNN id.
+// See README.md "Score delivery setup" for exactly how to get these.
+const GOOGLE_FORM = {
+  actionUrl: "",
+  entries: {
+    name: "",
+    email: "",
+    topic: "",
+    score: "",
+    total: ""
+  }
+};
+
+function submitScoreToGoogleForm(payload){
+  if(!GOOGLE_FORM.actionUrl) return;
+  const body = new FormData();
+  body.append(GOOGLE_FORM.entries.name, payload.name);
+  body.append(GOOGLE_FORM.entries.email, payload.email);
+  body.append(GOOGLE_FORM.entries.topic, payload.topic);
+  body.append(GOOGLE_FORM.entries.score, String(payload.score));
+  body.append(GOOGLE_FORM.entries.total, String(payload.total));
+  // no-cors: the response is opaque and unreadable, this is the standard
+  // (and only) way to submit a Google Form from client-side JS without a
+  // backend; Google still records the response server-side regardless.
+  fetch(GOOGLE_FORM.actionUrl, { method: "POST", mode: "no-cors", body }).catch(()=>{});
+}
+
+function getStudent(){
+  try{ return JSON.parse(localStorage.getItem("qa_student") || "{}"); }
+  catch(e){ return {}; }
+}
+
+function saveStudent(student){
+  try{ localStorage.setItem("qa_student", JSON.stringify(student)); }
+  catch(e){ /* localStorage unavailable, silently skip persistence */ }
+}
+
+let state = {
+  screen: "home",
+  deck: null,
+  mode: "quiz",
+  order: [],
+  idx: 0,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  answered: null,
+  missed: [],
+  flipped: false,
+  reviewQueue: [],
+  flashResult: {},
+  shuffleOn: true,
+  pendingQuiz: null,
+  student: null
+};
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function el(html){
+  const d = document.createElement('div');
+  d.innerHTML = html.trim();
+  return d.firstChild;
+}
+
+function render(){
+  const root = document.getElementById('root');
+  root.innerHTML = "";
+  if(state.screen === "home") root.appendChild(renderHome());
+  else if(state.screen === "quizTopics") root.appendChild(renderQuizTopics());
+  else if(state.screen === "cardTopics") root.appendChild(renderCardTopics());
+  else if(state.screen === "quizGate") root.appendChild(renderQuizGate());
+  else if(state.screen === "quiz") root.appendChild(renderQuiz());
+  else if(state.screen === "flash") root.appendChild(renderFlash());
+  else if(state.screen === "results") root.appendChild(renderResults());
+  else if(state.screen === "stats") root.appendChild(renderStats());
+
+  // Rebuilding #root from scratch drops DOM focus back to <body> every time,
+  // which strands keyboard/screen-reader users after each answer or action.
+  // Restore focus to whatever the next sensible action is on this screen.
+  const focusTarget = root.querySelector('[data-focus]');
+  if(focusTarget) focusTarget.focus();
+}
+
+/* ---------- HOME ---------- */
+function topicRow(label, count, unit, onclick, opts){
+  opts = opts || {};
+  return `<button type="button" class="topic-row ${opts.cls||''}" onclick="${onclick}">
+    <span class="info">
+      <span class="t-name">${escapeHtml(label)}</span>
+      <span class="t-count">${count} ${unit}</span>
+    </span>
+    ${opts.icon || ICONS.chevron}
+  </button>`;
+}
+
+function renderHome(){
+  const wrap = el(`<div>
+    <div class="mode-cards">
+      <button type="button" class="mode-card quiz" data-focus onclick="goToQuizTopics()">
+        <span class="mode-card-icon">${ICONS.bolt}</span>
+        <h2 class="mode-card-title">Quiz</h2>
+        <p class="mode-card-desc">Scored, multiple choice, one topic at a time.</p>
+      </button>
+      <button type="button" class="mode-card flash" onclick="goToCardTopics()">
+        <span class="mode-card-icon">${ICONS.check}</span>
+        <h2 class="mode-card-title">Flashcards</h2>
+        <p class="mode-card-desc">Flip through cards, mark what you know.</p>
+      </button>
+    </div>
+  </div>`);
+  return wrap;
+}
+
+function goToQuizTopics(){
+  state.screen = 'quizTopics';
+  render();
+}
+
+function goToCardTopics(){
+  state.screen = 'cardTopics';
+  render();
+}
+
+function backButton(onclick){
+  return `<button type="button" class="ghost small" data-focus onclick="${onclick}" style="margin-bottom:16px;">← Back</button>`;
+}
+
+function shuffleToggle(){
+  return `<label class="switch-row" style="margin-bottom:14px;">
+    <span style="position:relative;">
+      <input type="checkbox" class="switch-input" ${state.shuffleOn?'checked':''} onchange="state.shuffleOn=this.checked">
+      <span class="switch"></span>
+    </span>
+    Shuffle questions
+  </label>`;
+}
+
+function renderQuizTopics(){
+  const topics = (typeof COURSE_DATA !== 'undefined' && COURSE_DATA.topics) ? COURSE_DATA.topics : [];
+  const rows = topics.length ? [
+    topicRow('Quick-Exam', 10, 'random questions, mixed topics', `startQuizGate('quick')`, { cls: 'quick', icon: ICONS.bolt }),
+    ...topics.map(t => topicRow(t.name, t.quiz.length, 'Questions', `startQuizGate(${t.id})`))
+  ].join('') : '';
+
+  return el(`<div>
+    ${backButton('goHome()')}
+    <h1 class="title">Quiz: choose a topic</h1>
+    <p class="lead">You'll enter your name and email before the quiz starts so your instructor can see your score.</p>
+    ${shuffleToggle()}
+    ${topics.length ? `<div class="topic-list">${rows}</div>` : `<div class="card"><p class="lead" style="margin:0;">No topics found. Make sure data.js is loaded alongside index.html.</p></div>`}
+  </div>`);
+}
+
+function renderCardTopics(){
+  const topics = (typeof COURSE_DATA !== 'undefined' && COURSE_DATA.topics) ? COURSE_DATA.topics : [];
+  const rows = topics.map(t => topicRow(t.name, t.cards.length, 'Cards', `openTopic(${t.id}, 'cards')`)).join('');
+
+  return el(`<div>
+    ${backButton('goHome()')}
+    <h1 class="title">Flashcards: choose a topic</h1>
+    <p class="lead">No login needed for flashcards, just pick a topic and go.</p>
+    ${shuffleToggle()}
+    ${topics.length ? `<div class="topic-list">${rows}</div>` : `<div class="card"><p class="lead" style="margin:0;">No topics found. Make sure data.js is loaded alongside index.html.</p></div>`}
+  </div>`);
+}
+
+function startQuizGate(pending){
+  state.pendingQuiz = pending;
+  state.screen = 'quizGate';
+  render();
+}
+
+function renderQuizGate(){
+  const saved = getStudent();
+  return el(`<div>
+    ${backButton("state.screen='quizTopics';render()")}
+    <div class="card">
+      <h1 class="title">Before you start</h1>
+      <p class="lead">Enter your name and email so your instructor can see your quiz results.</p>
+      <label class="label" for="studentName" style="display:block;margin-bottom:6px;">Name</label>
+      <input class="text-input" type="text" id="studentName" value="${escapeHtml(saved.name||'')}" placeholder="Jane Doe">
+      <label class="label" for="studentEmail" style="display:block;margin:14px 0 6px;">Email</label>
+      <input class="text-input" type="email" id="studentEmail" value="${escapeHtml(saved.email||'')}" placeholder="jane@example.com">
+      <div id="gateError" class="field-error" style="display:none;"></div>
+      <div class="row" style="margin-top:20px;">
+        <button class="primary" onclick="submitGate()" style="flex:1;">Start quiz →</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function submitGate(){
+  const name = document.getElementById('studentName').value.trim();
+  const email = document.getElementById('studentEmail').value.trim();
+  const errEl = document.getElementById('gateError');
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if(!name || !emailOk){
+    errEl.textContent = !name ? "Please enter your name." : "Please enter a valid email address.";
+    errEl.style.display = 'block';
+    return;
+  }
+  state.student = { name, email };
+  saveStudent(state.student);
+  const pending = state.pendingQuiz;
+  state.pendingQuiz = null;
+  if(pending === 'quick') openQuickExam();
+  else openTopic(pending, 'quiz');
+}
+
+function beginSession(deck, mode){
+  state.deck = deck;
+  const idxArr = deck.items.map((_,i)=>i);
+  state.order = state.shuffleOn ? shuffle(idxArr) : idxArr;
+  state.idx = 0;
+  state.score = 0;
+  state.streak = 0;
+  state.bestStreak = 0;
+  state.answered = null;
+  state.missed = [];
+  state.flipped = false;
+  state.flashResult = {};
+  state.mode = mode;
+  state.screen = mode === 'quiz' ? 'quiz' : 'flash';
+  render();
+}
+
+function openTopic(topicId, kind){
+  const topic = COURSE_DATA.topics.find(t => t.id === topicId);
+  if(!topic) return;
+  if(kind === 'quiz') beginSession({ title: topic.name, items: topic.quiz }, 'quiz');
+  else beginSession({ title: topic.name + ': Flashcards', items: topic.cards }, 'flash');
+}
+
+function openQuickExam(){
+  const all = COURSE_DATA.topics.flatMap(t => t.quiz);
+  const sample = shuffle(all).slice(0, 10);
+  beginSession({ title: 'Quick-Exam', items: sample }, 'quiz');
+}
+
+/* ---------- QUIZ ---------- */
+function currentItem(){
+  return state.deck.items[state.order[state.idx]];
+}
+
+function renderQuiz(){
+  const item = currentItem();
+  const total = state.order.length;
+  const num = state.idx + 1;
+  const letters = ['A','B','C','D','E','F'];
+
+  const optsHtml = (item.options||[]).map((opt,i)=>{
+    let cls = "opt";
+    let disabled = "";
+    if(state.answered !== null){
+      disabled = "disabled";
+      if(i === item.answer) cls += " correct";
+      else if(i === state.answered) cls += " wrong";
+      else cls += " dim";
+    }
+    const autofocus = (state.answered === null && i === 0) ? "data-focus" : "";
+    return `<button type="button" class="${cls}" ${disabled} ${autofocus} onclick="answer(${i}, this)">
+      <span class="letter">${letters[i]}</span><span>${mdLite(opt)}</span>
+    </button>`;
+  }).join("");
+
+  const answeredCorrect = state.answered === item.answer;
+
+  const wrap = el(`<div>
+    <div class="quiz-header">
+      <div class="progress-track"><div class="progress-fill" style="width:${(num-1)/total*100}%"></div></div>
+      <div class="chip streak">${ICONS.flame}${state.streak}</div>
+      <div class="chip score">${ICONS.star}${state.score}</div>
+    </div>
+    <div class="card">
+      <div class="label" style="margin-bottom:8px;">Question ${num} of ${total}</div>
+      <div class="q-text">${mdLite(item.q)}</div>
+      ${item.image ? `<img class="q-image" src="${escapeHtml(item.image)}" alt="" onerror="this.remove()">` : ''}
+      <div class="opts">${optsHtml}</div>
+      ${state.answered !== null ? `
+      <div class="feedback ${answeredCorrect?'correct':'wrong'}">
+        ${answeredCorrect ? ICONS.check : ICONS.cross}
+        ${answeredCorrect ? 'Nice, that\'s right!' : 'Not quite'}
+      </div>
+      ${item.note ? `<div class="explain">${mdLite(item.note)}</div>` : ''}
+      ${item.weblink ? `<a class="weblink" href="${escapeHtml(item.weblink)}" target="_blank" rel="noopener">Learn more ↗</a>` : ''}
+      ` : ''}
+    </div>
+    <div class="row">
+      <button class="primary" ${state.answered===null?'disabled':'data-focus'} onclick="nextQuestion()" style="flex:1;">
+        ${num < total ? 'Next →' : 'See results →'}
+      </button>
+    </div>
+  </div>`);
+  return wrap;
+}
+
+function answer(i, btnEl){
+  const item = currentItem();
+  state.answered = i;
+  if(i === item.answer){
+    state.score++;
+    state.streak++;
+    if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+    if(btnEl) burstConfetti(btnEl);
+  } else {
+    state.streak = 0;
+    state.missed.push(item);
+  }
+  render();
+}
+
+function nextQuestion(){
+  if(state.idx < state.order.length - 1){
+    state.idx++;
+    state.answered = null;
+    render();
+  } else {
+    saveAttempt();
+    if(state.mode === 'quiz' && state.student){
+      submitScoreToGoogleForm({
+        name: state.student.name,
+        email: state.student.email,
+        topic: state.deck.title || "Untitled deck",
+        score: state.score,
+        total: state.deck.items.length
+      });
+    }
+    state.screen = 'results';
+    render();
+  }
+}
+
+function burstConfetti(originEl){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#FF4A11','#7B3FE4','#03AC13','#E94B7B'];
+  const rect = originEl.getBoundingClientRect();
+  const originX = rect.left + rect.width/2;
+  const originY = rect.top + rect.height/2;
+  for(let i=0;i<16;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 50 + Math.random()*80;
+    const dx = Math.cos(angle)*dist;
+    const dy = Math.sin(angle)*dist - 30;
+    p.style.setProperty('--dx', dx+'px');
+    p.style.setProperty('--dy', dy+'px');
+    p.style.setProperty('--rot', (Math.random()*360-180)+'deg');
+    p.style.background = colors[i % colors.length];
+    p.style.left = originX+'px';
+    p.style.top = originY+'px';
+    document.body.appendChild(p);
+    p.addEventListener('animationend', ()=>p.remove());
+  }
+}
+
+/* ---------- FLASHCARDS ---------- */
+function renderFlash(){
+  const item = currentItem();
+  const total = state.order.length;
+  const num = state.idx + 1;
+  const answerText = item.options ? item.options[item.answer] + (item.note ? "\n\n" + item.note : "") : (item.note || "(no answer text provided)");
+  const explainHtml = item.explain ? `<div class="explain">${mdLite(item.explain)}</div>` : '';
+  const weblinkHtml = item.weblink ? `<a class="weblink" href="${escapeHtml(item.weblink)}" target="_blank" rel="noopener">Learn more ↗</a>` : '';
+  const known = Object.values(state.flashResult).filter(v=>v).length;
+
+  const wrap = el(`<div>
+    <div class="quiz-header">
+      <div class="progress-track"><div class="progress-fill" style="width:${(num-1)/total*100}%"></div></div>
+      <div class="chip score">${ICONS.check}${known}</div>
+    </div>
+    <div class="flip-zone">
+      <button type="button" class="flip-card ${state.flipped?'flipped':''}" data-focus onclick="flipCard()">
+        <span class="face front">
+          <span class="label">Card ${num} of ${total}</span>
+          ${item.image ? `<img class="q-image" src="${escapeHtml(item.image)}" alt="" onerror="this.remove()">` : ''}
+          <span class="content"><span class="content-body">${mdLite(item.q)}</span></span>
+        </span>
+        <span class="face back">
+          <span class="label">Answer</span>
+          <span class="content"><span class="content-body">${mdLite(answerText)}${explainHtml}${weblinkHtml}</span></span>
+        </span>
+      </button>
+    </div>
+    <div class="hint">tap card, or press space, to flip</div>
+    <div class="row between">
+      <div class="row" style="margin-top:0;">
+        <button onclick="rateCard(false)">Review again</button>
+        <button class="primary" onclick="rateCard(true)">I knew it ✓</button>
+      </div>
+      <button class="ghost" onclick="goHome()">Exit</button>
+    </div>
+  </div>`);
+  return wrap;
+}
+
+function flipCard(){
+  state.flipped = !state.flipped;
+  render();
+}
+
+function rateCard(knew){
+  const key = state.order[state.idx];
+  state.flashResult[key] = knew;
+  if(state.idx < state.order.length - 1){
+    state.idx++;
+    state.flipped = false;
+    render();
+  } else {
+    const unknown = state.order.filter(k => !state.flashResult[k]);
+    if(unknown.length > 0){
+      state.order = shuffle(unknown);
+      state.idx = 0;
+      state.flipped = false;
+      render();
+    } else {
+      saveAttempt();
+      state.screen = 'results';
+      render();
+    }
+  }
+}
+
+/* ---------- RESULTS ---------- */
+function renderResults(){
+  const isQuiz = state.mode === 'quiz';
+  const total = state.deck.items.length;
+  const pct = isQuiz ? Math.round((state.score/total)*100) : 100;
+
+  const missedHtml = state.missed.map(m => `
+    <div class="missed-item">
+      <b>${mdLite(m.q)}</b>
+      ${m.options ? `Correct answer: ${mdLite(m.options[m.answer])}` : ''}
+      ${m.note ? `<div class="explain">${mdLite(m.note)}</div>` : ''}
+    </div>`).join("");
+
+  const wrap = el(`<div>
+    <div class="card">
+      ${isQuiz ? `
+        <div class="results-score" tabindex="-1" data-focus>${state.score}/${total}</div>
+        <p class="lead" style="margin-top:6px;">${pct}% correct on "${escapeHtml(state.deck.title||'this deck')}"${state.bestStreak>1 ? ` · best streak ${state.bestStreak} ${'🔥'}` : ''}</p>
+        ${state.student && GOOGLE_FORM.actionUrl ? `<p class="lead" style="margin-top:0;">Your score was sent to your instructor as ${escapeHtml(state.student.name)} (${escapeHtml(state.student.email)}).</p>` : ''}
+      ` : `
+        <div class="results-score" tabindex="-1" data-focus>Done ✓</div>
+        <p class="lead" style="margin-top:6px;">Finished all ${total} cards in "${escapeHtml(state.deck.title||'this deck')}"</p>
+      `}
+      ${state.missed.length>0 ? `<div style="margin-top:8px;"><strong>Missed questions</strong>${missedHtml}</div>` : ''}
+      <div class="row" style="margin-top:20px;">
+        <button class="primary" onclick="retrySame()">Try again</button>
+        <button class="ghost" onclick="goHome()">Change deck</button>
+      </div>
+    </div>
+  </div>`);
+  return wrap;
+}
+
+function retrySame(){
+  beginSession(state.deck, state.mode);
+}
+
+function goHome(){
+  state.screen = 'home';
+  render();
+}
+
+/* ---------- STATS (localStorage) ---------- */
+function deckKey(title){
+  return "qa_local_" + (title||"untitled").toLowerCase().replace(/[^a-z0-9]+/g,'-');
+}
+
+function saveAttempt(){
+  try{
+    const key = deckKey(state.deck.title);
+    const existing = JSON.parse(localStorage.getItem(key) || '{"attempts":[]}');
+    existing.title = state.deck.title || "Untitled deck";
+    existing.attempts.push({
+      date: new Date().toISOString(),
+      mode: state.mode,
+      score: state.mode==='quiz' ? state.score : null,
+      total: state.deck.items.length
+    });
+    localStorage.setItem(key, JSON.stringify(existing));
+  }catch(e){ /* localStorage unavailable, silently skip persistence */ }
+}
+
+function showStats(){
+  state.screen = 'stats';
+  render();
+}
+
+function renderStats(){
+  let decks = [];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k.startsWith('qa_local_')){
+        decks.push(JSON.parse(localStorage.getItem(k)));
+      }
+    }
+  }catch(e){}
+
+  const rows = decks.length ? decks.map(d => {
+    const attempts = d.attempts.slice(-5).reverse();
+    const rows = attempts.map(a => `
+      <div class="stat-row">
+        <span>${new Date(a.date).toLocaleDateString()} · ${a.mode}</span>
+        <b>${a.score!==null ? `${a.score}/${a.total}` : `${a.total} cards`}</b>
+      </div>`).join("");
+    return `<div class="card">
+      <h1 class="title" style="font-size:1.05rem;">${escapeHtml(d.title)}</h1>
+      ${rows}
+    </div>`;
+  }).join("") : `<div class="card"><p class="lead" style="margin:0;">No attempts recorded yet on this device.</p></div>`;
+
+  const wrap = el(`<div>
+    <h1 class="title" style="margin-bottom:4px;">Local stats</h1>
+    <p class="lead">Stored only in this browser's local storage, nothing is sent anywhere.</p>
+    ${rows}
+    <div class="row"><button class="ghost" onclick="goHome()">Back</button></div>
+  </div>`);
+  return wrap;
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Course content ships with a small, fixed markdown subset (bold, italic,
+// inline/fenced code, bullet lists). Escapes HTML first, so this is safe
+// even though the text ultimately comes from an external course export.
+// Fenced/inline code is stashed behind placeholders before the bold/italic/
+// list passes run, so characters like * inside real code never get parsed
+// as markdown.
+function mdLite(str){
+  if(!str) return '';
+  let s = escapeHtml(str);
+  const stash = [];
+  const keep = (html) => { stash.push(html); return `\u0000${stash.length-1}\u0000`; };
+  s = s.replace(/```[a-zA-Z]*\n([\s\S]*?)```/g, (m, code) => keep(
+    `<div class="code-block"><div class="code-titlebar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div><pre><code>${code.trim()}</code></pre></div>`
+  ));
+  s = s.replace(/`([^`]+)`/g, (m, code) => keep(`<code>${code}</code>`));
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  s = s.replace(/(^|\n)((?:- .*(?:\n|$))+)/g, (m, pre, block) => {
+    const items = block.trim().split('\n').map(l => l.replace(/^- /,'').trim());
+    return pre + '<ul>' + items.map(li => `<li>${li}</li>`).join('') + '</ul>';
+  });
+  s = s.split('\n').join('<br>');
+  s = s.replace(/(<br>)*(<ul>)/g, '$2').replace(/(<\/ul>)(<br>)*/g, '$1');
+  s = s.replace(/\u0000(\d+)\u0000/g, (m, i) => stash[i]);
+  return s;
+}
+
+render();
+</script>
+</body>
+</html>
