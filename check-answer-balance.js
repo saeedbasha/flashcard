@@ -1,8 +1,12 @@
 #!/usr/bin/env node
-// Flags two independent "guess without reading the question" tells in quiz data:
+// Flags three independent "guess without reading the question" tells in quiz data:
 //   1. Length bias: the correct option is noticeably longer than the AVERAGE wrong option,
 //      which lets a student score above chance by just picking the longest string.
 //   2. Position bias: the correct option lands on the same index far more than chance.
+//   3. Formatting bias: markdown emphasis (bold, inline code, italics) singles the correct
+//      option out, so it can be spotted without reading any of the text. This one is easy to
+//      introduce by accident, because emphasising the key phrase of a well-written answer is
+//      a natural thing to do while the throwaway distractors get left as plain prose.
 // Doesn't touch data.js, just reports.
 //
 // Note: the length check uses the AVERAGE distractor length, not the single longest wrong
@@ -31,6 +35,16 @@ function stripMd(s) {
   return s.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
 }
 
+// Markdown emphasis styles checked for tell #3. Italics has to ignore both
+// bold's `**` and anything inside a code span, otherwise a glob pattern such as
+// `test_*.py` reads as an italic marker and reports a tell that isn't there.
+const stripCodeSpans = s => s.replace(/`[^`]*`/g, '');
+const EMPHASIS = {
+  bold: s => /\*\*/.test(s),
+  'inline code': s => /`/.test(s),
+  italics: s => /\*/.test(stripCodeSpans(s).replace(/\*\*/g, '')),
+};
+
 const onlyIds = process.argv[2]
   ? new Set(process.argv[2].split(',').map(s => parseInt(s.trim(), 10)))
   : null;
@@ -40,6 +54,7 @@ let singleLongestCount = 0; // how often the correct option is the single longes
 const flagged = [];
 const positionSkewedTopics = [];
 const overallPositionCounts = {};
+const formatFlagged = [];
 
 for (const topic of COURSE_DATA.topics) {
   if (onlyIds && !onlyIds.has(topic.id)) continue;
@@ -55,6 +70,22 @@ for (const topic of COURSE_DATA.topics) {
 
     topicPositionCounts[item.answer] = (topicPositionCounts[item.answer] || 0) + 1;
     overallPositionCounts[item.answer] = (overallPositionCounts[item.answer] || 0) + 1;
+
+    // Formatting bias. Flag either direction: emphasis unique to the correct
+    // option, or emphasis on every distractor and absent from the correct one.
+    // Both let a reader pick the odd one out on appearance alone.
+    const wrongOpts = item.options.filter((_, i) => i !== item.answer);
+    if (wrongOpts.length >= 2) {
+      for (const [style, has] of Object.entries(EMPHASIS)) {
+        const onCorrect = has(item.options[item.answer]);
+        const onWrong = wrongOpts.filter(has).length;
+        if (onCorrect && onWrong === 0) {
+          formatFlagged.push({ topicId: topic.id, questionNumber: idx + 1, q: item.q, style, direction: 'only the correct option uses' });
+        } else if (!onCorrect && onWrong === wrongOpts.length) {
+          formatFlagged.push({ topicId: topic.id, questionNumber: idx + 1, q: item.q, style, direction: 'only the correct option omits' });
+        }
+      }
+    }
 
     if (maxWrong === 0) return;
 
@@ -109,6 +140,14 @@ for (const p of positionSkewedTopics) {
   console.log(`[Topic ${p.topicId} "${p.topicName}"] index ${p.index} is correct in ${p.count}/${p.topicTotal} questions (${(p.share * 100).toFixed(0)}%)`);
 }
 
+console.log(`\n--- Formatting bias ---`);
+console.log(`Markdown emphasis should never single the correct option out from its distractors.`);
+console.log(`Flagged ${formatFlagged.length} question(s).\n`);
+for (const f of formatFlagged) {
+  console.log(`[Topic ${f.topicId} Q${f.questionNumber}] ${f.direction} ${f.style}`);
+  console.log(`  ${f.q.replace(/\s+/g, ' ').slice(0, 120)}`);
+}
+
 if (!onlyIds) {
   console.log(`\nOverall answer-index distribution across all checked questions:`);
   for (const [index, count] of Object.entries(overallPositionCounts).sort((a, b) => a[0] - b[0])) {
@@ -116,6 +155,6 @@ if (!onlyIds) {
   }
 }
 
-if (flagged.length > 0 || positionSkewedTopics.length > 0) {
+if (flagged.length > 0 || positionSkewedTopics.length > 0 || formatFlagged.length > 0) {
   process.exitCode = 1;
 }
