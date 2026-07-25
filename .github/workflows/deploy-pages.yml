@@ -1,0 +1,51 @@
+name: Deploy Pages
+
+# Publishes the static app (index.html + data.js + toc.yml) to GitHub
+# Pages via Actions instead of the older "serve the main branch directly"
+# setting. No path filter: every push to main redeploys, which matches how the
+# branch-based deploy behaved, so there is no "I edited a file and the live
+# site did not change" surprise. workflow_dispatch lets you redeploy by hand
+# from the Actions tab, which is also how you trigger the very first deploy.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; a queued one supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # enablement: true asks GitHub to switch this repo's Pages build type to
+      # "workflow" if it is still on the legacy branch-based setting, which is
+      # what makes the deploy-pages step below valid. If it ever fails here,
+      # flip it once by hand: Settings > Pages > Build and deployment >
+      # Source: GitHub Actions.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # No build step: this app is plain static files, so the repo checkout is
+      # the site. Only tracked files are present in CI, so the large untracked
+      # local folders (repos/, MLE-sessions/, ds-book-template-main/) are not
+      # published.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

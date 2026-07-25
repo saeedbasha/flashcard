@@ -1,0 +1,49 @@
+# Table of Contents — controls which topics show up in the app for students.
+#
+# This file is read by index.html when the app loads. Every topic listed
+# here (and not commented out) appears in both the Quiz and Flashcards
+# topic pickers, and is included in Quick-Exam's random question pool.
+#
+# To hide a topic from students without deleting its content from data.js,
+# comment out its line by adding a `#` at the start. To show it again later,
+# just remove the `#`.
+#
+# Format: "- <id>  # <topic name, just for readability, the app only reads the id>"
+# The id must match a topic's "id" field in data.js.
+
+- 1  # Git & Version Control Workflows
+- 2  # Data Science & ML Fundamentals
+- 3  # Databases & SQL Fundamentals
+- 4  # Data Visualization Design
+- 5  # Exploratory Data Analysis & Visualization
+- 6  # Linear Regression & Gradient Descent
+- 7  # Bias-Variance Tradeoff & Regularization
+- 8  # Logistic Regression & Evaluation Metrics
+- 9  # K-Nearest Neighbors & Distance Metrics
+- 10  # Decision Trees & Ensemble Methods
+- 11  # Feature Engineering
+- 12  # ML Productionization & Data Products
+- 13  # Neural Networks & Deep Learning
+- 14  # Image Modeling & Convolutional Neural Networks (CNNs)
+- 15  # NLP Fundamentals
+- 16  # AI Agents & RAG Systems
+- 17  # Probability Distributions & Confidence Intervals
+- 18  # Hypothesis Testing
+- 19  # Time Series Analysis
+- 20  # Dimensionality Reduction
+- 21  # Clustering & Unsupervised Learning
+- 22  # LLM Foundations & Embeddings
+
+# --- MLE (Machine Learning Engineering) track ---
+- 23  # Code Refactoring and OOP
+- 24  # Testing, Packaging, and Decorators in Python
+- 25  # Docker and APIs
+- 26  # Data Modeling and ETL Pipelines
+- 27  # dbt (Data Build Tool)
+- 28  # Workflow Orchestration with Prefect
+- 29  # ML Engineering Fundamentals
+- 30  # Testing ML Systems
+- 31  # Model Deployment Strategies
+- 32  # CI/CD for ML Systems
+- 33  # Service Monitoring
+- 34  # Model Performance Monitoring and Drift

@@ -1,0 +1,10 @@
+{
+  "name": "ds-quizzes-flashcards",
+  "version": "1.0.0",
+  "description": "Static quiz/flashcard study app for a DS/ML/AI bootcamp. No build step; this package.json only wires up validation scripts.",
+  "private": true,
+  "scripts": {
+    "check": "node --check data.js && node check-answer-balance.js",
+    "test": "npm run check"
+  }
+}
