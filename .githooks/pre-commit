@@ -1,0 +1,22 @@
+#!/bin/sh
+# Opt-in pre-commit hook. Enable once with:
+#   git config core.hooksPath .githooks
+#
+# It runs the answer-balance validation only when data.js is part of the
+# commit, so unrelated commits are not slowed down. It blocks the commit if
+# data.js has a syntax error, a length-bias flag (a correct option >= 1.3x
+# the average distractor length), or a position-bias flag.
+
+if git diff --cached --name-only | grep -qx 'data.js'; then
+  echo "data.js changed: running answer-balance check..."
+  node --check data.js || {
+    echo "data.js failed node --check (syntax error). Commit aborted."
+    exit 1
+  }
+  node check-answer-balance.js || {
+    echo ""
+    echo "Answer-balance check failed. Fix the flagged questions (or re-balance"
+    echo "option positions), then commit again. To bypass in an emergency: git commit --no-verify"
+    exit 1
+  }
+fi

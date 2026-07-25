@@ -6,10 +6,19 @@
 
 !index.html
 !data.js
+!toc.yml
+!groups.yml
+!check-answer-balance.js
+!package.json
+!.githooks/
+!.githooks/**
+!.github/
+!.github/**
 !README.md
 !CLAUDE.md
 !DESIGN.md
 !PRODUCT.md
+!topic-repo-map.md
 !.gitignore
 
 !assets/

@@ -54,11 +54,10 @@
   .app{width:100%;max-width:640px;}
 
   .topbar{
-    display:flex;align-items:center;justify-content:space-between;
+    display:flex;align-items:center;justify-content:flex-end;
     margin-bottom:var(--sp-lg);
   }
   .topbar-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
-  .brand{display:flex;align-items:center;gap:10px;}
 
   button{
     font-family:var(--font-body);font-size:14px;font-weight:600;
@@ -90,16 +89,6 @@
 
   h1.title{font-family:var(--font-display);font-weight:700;font-size:1.3rem;margin:0 0 4px;color:var(--ink);letter-spacing:-0.01em;}
   p.lead{color:var(--ink-muted);font-size:14px;margin:0 0 var(--sp-md);line-height:1.55;}
-
-  .text-input{
-    width:100%;
-    font-family:var(--font-body);font-size:14px;
-    border:1px solid var(--border);border-radius:var(--r-md);
-    padding:11px 14px;
-    background:var(--gray-bg);color:var(--ink);
-  }
-  .text-input:focus-visible{outline:2px solid var(--purple);outline-offset:1px;}
-  .field-error{color:var(--rose-deep);font-size:13px;margin-top:8px;}
 
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;}
   .row.between{justify-content:space-between;}
@@ -241,17 +230,24 @@
   .flip-card:focus-visible .face{outline:2px solid var(--purple);outline-offset:2px;}
   .face{
     grid-area:1/1;min-height:220px;
-    backface-visibility:hidden;
+    backface-visibility:hidden;-webkit-backface-visibility:hidden;
     background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow-rest);
     display:flex;flex-direction:column;
     padding:22px;text-align:left;
+    transition:opacity 0s .25s;
   }
+  /* Guard the face swap on opacity, not just backface-visibility: some browsers
+     coerce preserve-3d to flat on grid containers, so the rotated-away front face
+     would otherwise show through (mirrored) on top of the answer. The 0s/.25s
+     transition flips visibility exactly at the .5s flip's midpoint. */
+  .flip-card:not(.flipped) .face.back{opacity:0;}
+  .flip-card.flipped .face.front{opacity:0;}
   .face .label{margin-bottom:12px;}
   .face .content{font-size:16px;line-height:1.55;flex:1;display:flex;align-items:center;color:var(--ink);}
   .face .content-body{width:100%;white-space:pre-line;}
   .face .content-body ul{margin:6px 0;padding-left:1.2em;}
   .face .content-body li{margin:3px 0;}
-  .face.back{transform:rotateY(180deg);background:var(--purple-tint);}
+  .face.back{transform:rotateY(180deg);background:#F2ECFC;}
   .hint{text-align:center;font-size:12px;color:var(--ink-muted);margin:-4px 0 var(--sp-md);}
 
   /* ---------- results ---------- */
@@ -281,16 +277,19 @@
 
   @media (prefers-reduced-motion: reduce){
     .flip-card{transition:none;}
+    .flip-card .face{transition:none;}
     .opt.correct{animation:none;}
     button:hover:not(:disabled){transform:none;}
   }
 </style>
+<!-- KaTeX: renders the $...$ and $$...$$ LaTeX math embedded throughout the
+     quiz/flashcard content. Loaded from a CDN; if it is blocked the app still
+     works and math simply shows as its raw source (same as before this). -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="brand">
-    </div>
     <div class="topbar-actions">
       <button class="ghost small" onclick="goHome()">Home</button>
       <button class="ghost small" id="statsBtn" onclick="showStats()">Stats</button>
@@ -299,10 +298,16 @@
 
   <div id="root"></div>
 
-  <footer>flashcards stay on this device · quiz scores (name, email, topic, score) are sent to your instructor</footer>
+  <footer>no login needed · your quiz scores and flashcard progress stay on this device</footer>
 </div>
 
-<script src="data.js?v=22"></script>
+<!-- KaTeX engine + auto-render. Deferred so they never block first paint:
+     the app opens on the math-free Home screen, and every screen that has
+     math is reached by a later click, by which time these have executed and
+     renderMathInElement() is defined. typesetMath() is guarded regardless. -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="data.js?v=40"></script>
 <script>
 const ICONS = {
   flame: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1-.5-2-1-2.5.8.2 3 1.8 3 5.5a5 5 0 0 1-10 0c0-5 3-6 5-11Z"/></svg>`,
@@ -313,43 +318,42 @@ const ICONS = {
   bolt: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>`
 };
 
-// Google Form submission (silent, fire-and-forget). Fill these in once the
-// form exists: actionUrl is the form's live URL with /viewform swapped for
-// /formResponse; each entries.* value is that field's entry.NNNNNN id.
-// See README.md "Score delivery setup" for exactly how to get these.
-const GOOGLE_FORM = {
-  actionUrl: "",
-  entries: {
-    name: "",
-    email: "",
-    topic: "",
-    score: "",
-    total: ""
+// The app is fully anonymous: there is no name/email/group gate and no score
+// delivery to an instructor. Quiz results and flashcard progress are written to
+// this browser's localStorage only (see the STATS section) and never leave the
+// device. If per-student score reporting is ever wanted again it needs a fresh
+// decision about what is collected, not a revival of the old Google Form code.
+
+// Table of Contents: controls which topics from data.js actually show up
+// in the app. Comment out a line in toc.yml (add a leading #) to hide that
+// topic from students without deleting its content. A missing or unreadable
+// toc.yml fails open (shows every topic) rather than breaking the app.
+let visibleTopicIds = null; // null = no filter, show every topic
+
+function parseTocYml(text){
+  const ids = [];
+  for(const rawLine of text.split('\n')){
+    const line = rawLine.trim();
+    if(!line || line.startsWith('#')) continue;
+    const match = line.match(/^-\s*(\d+)/);
+    if(match) ids.push(Number(match[1]));
   }
-};
-
-function submitScoreToGoogleForm(payload){
-  if(!GOOGLE_FORM.actionUrl) return;
-  const body = new FormData();
-  body.append(GOOGLE_FORM.entries.name, payload.name);
-  body.append(GOOGLE_FORM.entries.email, payload.email);
-  body.append(GOOGLE_FORM.entries.topic, payload.topic);
-  body.append(GOOGLE_FORM.entries.score, String(payload.score));
-  body.append(GOOGLE_FORM.entries.total, String(payload.total));
-  // no-cors: the response is opaque and unreadable, this is the standard
-  // (and only) way to submit a Google Form from client-side JS without a
-  // backend; Google still records the response server-side regardless.
-  fetch(GOOGLE_FORM.actionUrl, { method: "POST", mode: "no-cors", body }).catch(()=>{});
+  return ids;
 }
 
-function getStudent(){
-  try{ return JSON.parse(localStorage.getItem("qa_student") || "{}"); }
-  catch(e){ return {}; }
+function getVisibleTopics(){
+  const topics = (typeof COURSE_DATA !== 'undefined' && COURSE_DATA.topics) ? COURSE_DATA.topics : [];
+  if(visibleTopicIds === null) return topics;
+  return topics.filter(t => visibleTopicIds.has(t.id));
 }
 
-function saveStudent(student){
-  try{ localStorage.setItem("qa_student", JSON.stringify(student)); }
-  catch(e){ /* localStorage unavailable, silently skip persistence */ }
+async function loadToc(){
+  try{
+    const res = await fetch('toc.yml', { cache: 'no-store' });
+    if(!res.ok) return;
+    const ids = parseTocYml(await res.text());
+    if(ids.length) visibleTopicIds = new Set(ids);
+  }catch(e){ /* toc.yml missing or unreadable: fail open, show every topic */ }
 }
 
 let state = {
@@ -366,9 +370,7 @@ let state = {
   flipped: false,
   reviewQueue: [],
   flashResult: {},
-  shuffleOn: true,
-  pendingQuiz: null,
-  student: null
+  shuffleOn: true
 };
 
 function shuffle(arr){
@@ -392,7 +394,6 @@ function render(){
   if(state.screen === "home") root.appendChild(renderHome());
   else if(state.screen === "quizTopics") root.appendChild(renderQuizTopics());
   else if(state.screen === "cardTopics") root.appendChild(renderCardTopics());
-  else if(state.screen === "quizGate") root.appendChild(renderQuizGate());
   else if(state.screen === "quiz") root.appendChild(renderQuiz());
   else if(state.screen === "flash") root.appendChild(renderFlash());
   else if(state.screen === "results") root.appendChild(renderResults());
@@ -403,6 +404,26 @@ function render(){
   // Restore focus to whatever the next sensible action is on this screen.
   const focusTarget = root.querySelector('[data-focus]');
   if(focusTarget) focusTarget.focus();
+
+  typesetMath(root);
+}
+
+// Render the $...$ (inline) and $$...$$ (display) LaTeX that appears throughout
+// the quiz/flashcard content, using KaTeX's auto-render helper on the freshly
+// built DOM. Reads text nodes (not innerHTML), so mdLite's HTML-escaping is a
+// non-issue: the browser has already decoded entities back to real characters.
+// KaTeX skips <code>/<pre> by default, so inline code and fenced code blocks
+// are left untouched. Guarded: if the KaTeX CDN is blocked, math just shows as
+// its raw source, exactly as it did before this feature existed.
+function typesetMath(root){
+  if(!window.renderMathInElement) return;
+  window.renderMathInElement(root, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });
 }
 
 /* ---------- HOME ---------- */
@@ -460,23 +481,23 @@ function shuffleToggle(){
 }
 
 function renderQuizTopics(){
-  const topics = (typeof COURSE_DATA !== 'undefined' && COURSE_DATA.topics) ? COURSE_DATA.topics : [];
+  const topics = getVisibleTopics();
   const rows = topics.length ? [
-    topicRow('Quick-Exam', 10, 'random questions, mixed topics', `startQuizGate('quick')`, { cls: 'quick', icon: ICONS.bolt }),
-    ...topics.map(t => topicRow(t.name, t.quiz.length, 'Questions', `startQuizGate(${t.id})`))
+    topicRow('Quick-Exam', 10, 'random questions, mixed topics', `openQuickExam()`, { cls: 'quick', icon: ICONS.bolt }),
+    ...topics.map(t => topicRow(t.name, t.quiz.length, 'Questions', `openTopic(${t.id}, 'quiz')`))
   ].join('') : '';
 
   return el(`<div>
     ${backButton('goHome()')}
     <h1 class="title">Quiz: choose a topic</h1>
-    <p class="lead">You'll enter your name and email before the quiz starts so your instructor can see your score.</p>
+    <p class="lead">No login needed, just pick a topic and start. Your score stays on this device.</p>
     ${shuffleToggle()}
     ${topics.length ? `<div class="topic-list">${rows}</div>` : `<div class="card"><p class="lead" style="margin:0;">No topics found. Make sure data.js is loaded alongside index.html.</p></div>`}
   </div>`);
 }
 
 function renderCardTopics(){
-  const topics = (typeof COURSE_DATA !== 'undefined' && COURSE_DATA.topics) ? COURSE_DATA.topics : [];
+  const topics = getVisibleTopics();
   const rows = topics.map(t => topicRow(t.name, t.cards.length, 'Cards', `openTopic(${t.id}, 'cards')`)).join('');
 
   return el(`<div>
@@ -486,49 +507,6 @@ function renderCardTopics(){
     ${shuffleToggle()}
     ${topics.length ? `<div class="topic-list">${rows}</div>` : `<div class="card"><p class="lead" style="margin:0;">No topics found. Make sure data.js is loaded alongside index.html.</p></div>`}
   </div>`);
-}
-
-function startQuizGate(pending){
-  state.pendingQuiz = pending;
-  state.screen = 'quizGate';
-  render();
-}
-
-function renderQuizGate(){
-  const saved = getStudent();
-  return el(`<div>
-    ${backButton("state.screen='quizTopics';render()")}
-    <div class="card">
-      <h1 class="title">Before you start</h1>
-      <p class="lead">Enter your name and email so your instructor can see your quiz results.</p>
-      <label class="label" for="studentName" style="display:block;margin-bottom:6px;">Name</label>
-      <input class="text-input" type="text" id="studentName" value="${escapeHtml(saved.name||'')}" placeholder="Jane Doe">
-      <label class="label" for="studentEmail" style="display:block;margin:14px 0 6px;">Email</label>
-      <input class="text-input" type="email" id="studentEmail" value="${escapeHtml(saved.email||'')}" placeholder="jane@example.com">
-      <div id="gateError" class="field-error" style="display:none;"></div>
-      <div class="row" style="margin-top:20px;">
-        <button class="primary" onclick="submitGate()" style="flex:1;">Start quiz →</button>
-      </div>
-    </div>
-  </div>`);
-}
-
-function submitGate(){
-  const name = document.getElementById('studentName').value.trim();
-  const email = document.getElementById('studentEmail').value.trim();
-  const errEl = document.getElementById('gateError');
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  if(!name || !emailOk){
-    errEl.textContent = !name ? "Please enter your name." : "Please enter a valid email address.";
-    errEl.style.display = 'block';
-    return;
-  }
-  state.student = { name, email };
-  saveStudent(state.student);
-  const pending = state.pendingQuiz;
-  state.pendingQuiz = null;
-  if(pending === 'quick') openQuickExam();
-  else openTopic(pending, 'quiz');
 }
 
 function beginSession(deck, mode){
@@ -549,14 +527,14 @@ function beginSession(deck, mode){
 }
 
 function openTopic(topicId, kind){
-  const topic = COURSE_DATA.topics.find(t => t.id === topicId);
+  const topic = getVisibleTopics().find(t => t.id === topicId);
   if(!topic) return;
   if(kind === 'quiz') beginSession({ title: topic.name, items: topic.quiz }, 'quiz');
   else beginSession({ title: topic.name + ': Flashcards', items: topic.cards }, 'flash');
 }
 
 function openQuickExam(){
-  const all = COURSE_DATA.topics.flatMap(t => t.quiz);
+  const all = getVisibleTopics().flatMap(t => t.quiz);
   const sample = shuffle(all).slice(0, 10);
   beginSession({ title: 'Quick-Exam', items: sample }, 'quiz');
 }
@@ -605,8 +583,8 @@ function renderQuiz(){
         ${answeredCorrect ? ICONS.check : ICONS.cross}
         ${answeredCorrect ? 'Nice, that\'s right!' : 'Not quite'}
       </div>
-      ${item.note ? `<div class="explain">${mdLite(item.note)}</div>` : ''}
-      ${item.weblink ? `<a class="weblink" href="${escapeHtml(item.weblink)}" target="_blank" rel="noopener">Learn more ↗</a>` : ''}
+      ${item.note ? `<div class="explain">${mdLite(noteForDisplay(item))}</div>` : ''}
+      ${weblinkAnchor(item)}
       ` : ''}
     </div>
     <div class="row">
@@ -640,15 +618,6 @@ function nextQuestion(){
     render();
   } else {
     saveAttempt();
-    if(state.mode === 'quiz' && state.student){
-      submitScoreToGoogleForm({
-        name: state.student.name,
-        email: state.student.email,
-        topic: state.deck.title || "Untitled deck",
-        score: state.score,
-        total: state.deck.items.length
-      });
-    }
     state.screen = 'results';
     render();
   }
@@ -683,9 +652,10 @@ function renderFlash(){
   const item = currentItem();
   const total = state.order.length;
   const num = state.idx + 1;
-  const answerText = item.options ? item.options[item.answer] + (item.note ? "\n\n" + item.note : "") : (item.note || "(no answer text provided)");
+  const noteDisp = noteForDisplay(item);
+  const answerText = item.options ? item.options[item.answer] + (noteDisp ? "\n\n" + noteDisp : "") : (noteDisp || "(no answer text provided)");
   const explainHtml = item.explain ? `<div class="explain">${mdLite(item.explain)}</div>` : '';
-  const weblinkHtml = item.weblink ? `<a class="weblink" href="${escapeHtml(item.weblink)}" target="_blank" rel="noopener">Learn more ↗</a>` : '';
+  const weblinkHtml = weblinkAnchor(item);
   const known = Object.values(state.flashResult).filter(v=>v).length;
 
   const wrap = el(`<div>
@@ -755,7 +725,7 @@ function renderResults(){
     <div class="missed-item">
       <b>${mdLite(m.q)}</b>
       ${m.options ? `Correct answer: ${mdLite(m.options[m.answer])}` : ''}
-      ${m.note ? `<div class="explain">${mdLite(m.note)}</div>` : ''}
+      ${m.note ? `<div class="explain">${mdLite(noteForDisplay(m))}</div>` : ''}
     </div>`).join("");
 
   const wrap = el(`<div>
@@ -763,7 +733,6 @@ function renderResults(){
       ${isQuiz ? `
         <div class="results-score" tabindex="-1" data-focus>${state.score}/${total}</div>
         <p class="lead" style="margin-top:6px;">${pct}% correct on "${escapeHtml(state.deck.title||'this deck')}"${state.bestStreak>1 ? ` · best streak ${state.bestStreak} ${'🔥'}` : ''}</p>
-        ${state.student && GOOGLE_FORM.actionUrl ? `<p class="lead" style="margin-top:0;">Your score was sent to your instructor as ${escapeHtml(state.student.name)} (${escapeHtml(state.student.email)}).</p>` : ''}
       ` : `
         <div class="results-score" tabindex="-1" data-focus>Done ✓</div>
         <p class="lead" style="margin-top:6px;">Finished all ${total} cards in "${escapeHtml(state.deck.title||'this deck')}"</p>
@@ -847,7 +816,29 @@ function renderStats(){
 
 function escapeHtml(str){
   return String(str)
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+// Wikipedia links are hidden app-wide for now (display only, data.js untouched).
+// Flip HIDE_WIKIPEDIA_LINKS to false to show them again. This suppresses the
+// clickable "Learn more" anchor for wikipedia.org URLs and drops the trailing
+// "🔗 WebLink:" line from a note when that note's source is the hidden Wikipedia
+// link; official-docs links (scikit-learn, docker, dbt, etc.) are unaffected.
+const HIDE_WIKIPEDIA_LINKS = true;
+function isHiddenLink(url){
+  return HIDE_WIKIPEDIA_LINKS && /wikipedia\.org/i.test(String(url || ''));
+}
+function weblinkAnchor(item){
+  if(!item || !item.weblink || isHiddenLink(item.weblink)) return '';
+  return `<a class="weblink" href="${escapeHtml(item.weblink)}" target="_blank" rel="noopener">Learn more ↗</a>`;
+}
+function noteForDisplay(item){
+  const note = item && item.note ? item.note : '';
+  if(note && isHiddenLink(item.weblink)){
+    return note.replace(/\s*🔗\s*\*\*WebLink:\*\*[\s\S]*$/, '').trimEnd();
+  }
+  return note;
 }
 
 // Course content ships with a small, fixed markdown subset (bold, italic,
@@ -877,7 +868,7 @@ function mdLite(str){
   return s;
 }
 
-render();
+loadToc().then(render);
 </script>
 </body>
 </html>

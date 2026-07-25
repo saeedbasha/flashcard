@@ -1,0 +1,27 @@
+name: quiz-data-check
+
+# Runs the answer-balance validation on any change that could affect the quiz
+# data, so bias regressions are caught in the PR rather than after merge.
+on:
+  pull_request:
+    paths:
+      - 'data.js'
+      - 'check-answer-balance.js'
+      - 'package.json'
+  push:
+    branches: [main]
+    paths:
+      - 'data.js'
+      - 'check-answer-balance.js'
+      - 'package.json'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # No dependencies to install: npm test only runs Node scripts.
+      - run: npm test
