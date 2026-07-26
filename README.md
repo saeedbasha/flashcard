@@ -45,6 +45,7 @@ npm test    # no dependencies to install
 | `toc.yml` | Controls which topics are visible to students. |
 | `topic-repo-map.md` | Maps each topic to the repo notebook its questions are grounded in. |
 | `check-answer-balance.js` | Checks the content for answer-balance tells. |
+| `tools/` | Helper scripts for bulk content edits (see "Editing content in bulk"). |
 | `package.json` | Wires up `npm test` / `npm run check`. No dependencies. |
 | `.githooks/pre-commit` | Opt-in hook that runs the check on commits touching `data.js`. |
 | `.github/workflows/deploy-pages.yml` | Deploys to GitHub Pages on every push to `main`. |
@@ -143,6 +144,55 @@ breaks that quotation silently.
 **Never invent mechanics to pad a distractor.** Vague filler is harmless, but a
 false statement about how something works is a content bug, and no check here
 can catch it.
+
+## Editing content in bulk
+
+`tools/` holds the scripts used to rewrite options across many questions at once.
+Plain Node, no dependencies. Each one takes the path to a `data.js` explicitly, so
+point them at a copy first and only promote it once the checks pass:
+
+```bash
+cp data.js /tmp/try.js                          # work on a copy
+node tools/dump.js      /tmp/try.js 5,9         # list length-flagged questions
+node tools/fmtdump.js   /tmp/try.js 5,9         # list questions where emphasis singles the answer out
+node tools/apply.js     /tmp/try.js patch.json  # apply rewrites (add --dry to preview)
+node tools/notecheck.js /tmp/try.js 5           # check note bullets still match their options
+cp /tmp/try.js data.js                          # promote, then bump the cache-buster
+```
+
+A patch file is a list of edits, keyed by the *existing* option text:
+
+```json
+[{ "topic": 5, "q": 17, "correct": "New text for the correct option",
+   "opts": { "old distractor text": "new distractor text" } }]
+```
+
+`apply.js` refuses to touch the correct option unless you pass `correct`
+explicitly, so an edit can never silently move the answer. It also refuses to
+string-replace an option shorter than 8 characters into a note, because a
+one-character option such as the SQL operator `*` will match the note's own bold
+markers and shred it.
+
+**Check the orphan set, not the count.** A note's `**Wrong:**` bullets often quote
+only a *fragment* of an option, so editing an option can leave a bullet matching
+nothing. `notecheck.js` reports those.
+
+Two things to know before reading its output:
+
+- **It exits 1 whenever any orphan exists, and roughly 570 already do.** That is
+  not 570 bugs. Many notes paraphrase their distractors (`*"min to max"*` for an
+  option reading "The full range from minimum to maximum value") instead of
+  quoting them, which is perfectly fine and renders correctly. A non-zero exit is
+  therefore the normal state, not a failure signal.
+- **The signal is a change in the set, not the total.** Capture the orphan list
+  before your edit and diff it against the list after. One newly broken bullet
+  plus one coincidentally repaired elsewhere nets to zero on a count and hides the
+  damage. Comparing sets this way is what caught 11 broken bullets during the
+  answer-balance cleanup.
+
+The practical rule that avoids the problem entirely: **only ever lengthen a
+distractor by appending to the end of it.** Inserting a word into the middle is
+what breaks a fragment quotation.
 
 ## Data checks
 
