@@ -1,6 +1,6 @@
 ---
 name: Quiz Academy (Local)
-description: A neue fische / SPICED-branded quiz and flashcard study app for bootcamp students
+description: A quiz and flashcard study app for bootcamp students, styled with the neue fische / SPICED colour system (no logos or brand marks)
 colors:
   orange: "#FF4A11"
   orange-deep: "#C93A0E"
