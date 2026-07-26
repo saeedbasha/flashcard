@@ -1341,7 +1341,7 @@ const COURSE_DATA = {
         {
           "q": "Which of these is an example of **unstructured data**?",
           "options": [
-            "A folder of **customer support emails** (free text)",
+            "A folder of **customer support emails** in free text",
             "A **CSV file** with columns `age`, `income`, `city`",
             "A **SQL table** of orders with fixed columns",
             "An **Excel sheet** of monthly sales figures"
@@ -2648,7 +2648,7 @@ const COURSE_DATA = {
             "The rule that a chart's data-ink ratio should be maximized at all times",
             "The tendency to group objects that are close to each other on the page",
             "The tendency to perceive a dotted outline as a complete shape anyway",
-            "The tendency to split a scene into a focal object (figure) and a background (ground)"
+            "The tendency to separate a scene into a focal figure and a background ground"
           ],
           "answer": 3,
           "note": "**Correct:** **Figure and ground** is the \"bonus\" Gestalt principle describing how the visual system separates a scene into a focal object (the figure) and the surface it appears to rest on (the ground), famously illustrated by Rubin's vase, which can be seen as either a vase or two facing profiles.\n\n**Wrong:**\n- *\"group objects that are close\"*: that's **proximity**\n- *\"dotted outline perceived as complete\"*: that's **closure**\n- *\"maximize a chart's data-ink ratio\"*: that's an efficiency rule from Tufte, unrelated to figure/ground perception\n\n**Further Explanation:** Figure/ground is why ambiguous illustrations can flip between two readings, and in design it's a reminder that what counts as \"figure\" versus \"background\" isn't fixed, it's something the designer controls through contrast and emphasis.\n\n🔗 **WebLink:** Wikipedia's article on figure-ground perception, including the Rubin's vase illusion.",
@@ -3697,7 +3697,7 @@ const COURSE_DATA = {
           "q": "What is the **mode** of the values [\"red\", \"blue\", \"red\", \"green\", \"red\", \"blue\"]?",
           "options": [
             "There is no mode for categorical data",
-            "\"red\": it occurs most often (3 times)",
+            "\"red\": it occurs 3 times",
             "\"blue\": it occurs most often",
             "\"green\": as the alphabetically last value"
           ],
@@ -4170,7 +4170,7 @@ const COURSE_DATA = {
             "The curves can't be told apart: R² and adjusted R² always move identically",
             "**Metric A = adjusted R²**; **Metric B = plain R²**, the reverse pairing",
             "Both curves show plain R² computed on two different datasets",
-            "**Metric A = plain R²** (never decreases); **Metric B = adjusted R²** (peaks)"
+            "**Metric A = plain R²**, which never decreases; **Metric B = adjusted R²**, which peaks"
           ],
           "answer": 3,
           "note": "**Correct:** **Metric A = plain R²** (monotone: can never decrease as features are added); **Metric B = adjusted R²** (rises with useful features, **falls** when useless ones arrive).\n\n**Wrong:**\n- *Reversed*: adjusted R² is the one that can drop: the falling curve can't be plain R²\n- *\"two datasets\"*: the image tracks two **metrics** on one dataset, not one metric twice\n- *\"always move identically\"*: they only coincide while every added feature genuinely helps\n\n**Further Explanation:** This diverging-curves pattern (train metric improving, test/validation metric worsening) is the single most important diagnostic chart for detecting overfitting, and reappears throughout Topic 4.\n\n🔗 **WebLink:** Wikipedia's article on model selection: choosing between competing models.",
@@ -5067,7 +5067,7 @@ const COURSE_DATA = {
             "**Alpha** has no relationship to how tightly a model is constrained",
             "The leash length represents the **train/test split ratio**, not regularization strength",
             "A **longer leash** always represents a better-performing model, regardless of alpha",
-            "**Too high an alpha** underfits (short leash); **too low** overfits (slack leash)"
+            "**Too high an alpha** underfits, the short leash; **too low** overfits, the slack leash"
           ],
           "answer": 3,
           "note": "**Correct:** Leash length = **inverse alpha**: too short (huge alpha) can't reach the ball → underfitting; too slack (tiny alpha) overshoots into noise → overfitting; the tuned middle lands on target.\n\n**Wrong:**\n- *\"alpha unrelated to constraint tightness\"*: alpha **is** the constraint dial\n- *\"longer leash always better\"*: the slack leash is the overfitting failure, not a win\n- *\"leash = train/test ratio\"*: data splitting is a different topic entirely\n\n**Further Explanation:** Regularization strength (alpha) works exactly like leash length: too tight (large alpha) constrains the model to underfit, too loose (small alpha) lets it overfit by reaching too freely toward the training data.\n\n🔗 **WebLink:** Wikipedia's article on constraints in mathematical optimization.",
@@ -5649,7 +5649,7 @@ const COURSE_DATA = {
         {
           "q": "In logistic regression, what is the **decision boundary**, and what threshold does scikit-learn use by default?",
           "options": [
-            "Where predicted probability crosses a cutoff (default **0.5**)",
+            "Where predicted probability crosses a cutoff, by default **0.5**",
             "The **maximum value** any feature can take in the training data",
             "A boundary that is always fixed at exactly **50 raw feature units**",
             "The line connecting **every training data point**"
@@ -7019,7 +7019,7 @@ const COURSE_DATA = {
           "options": [
             "It always splits at the **mean of all training values**",
             "It converts the number into a **fixed category** before splitting",
-            "It compares the value to a learned **threshold** (split value)",
+            "It compares the value to a learned **threshold** or split value",
             "Numeric features **cannot be used** in decision trees"
           ],
           "answer": 2,
@@ -8364,7 +8364,7 @@ const COURSE_DATA = {
             "**Fill everything with 0** and move on",
             "**Drop the 85% of rows** instead, keeping the column",
             "**Impute all 85% with the mean**: imputation always beats deletion",
-            "**Drop the column** (possibly keeping a was-present indicator)"
+            "**Drop the column**, possibly keeping a was-present indicator"
           ],
           "answer": 3,
           "note": "**Correct:** The course's ~20%-rule of thumb points the other way here: with 85% missing, the column is mostly **fabrication after imputation**. Dropping it (optionally keeping a missingness flag if informative) is the honest move.\n\n**Wrong:**\n- *\"impute the 85%\"*: the \"feature\" would be 85% synthetic mean-noise\n- *\"drop the rows\"*: sacrifices 85% of the **dataset** for one weak column: backwards priorities\n- *\"fill with 0\"*: fake values plus a fake meaning for zero\n\n**Further Explanation:** At 85% missing, there's rarely enough real signal left in a column to justify keeping it: dropping it entirely is usually more honest than trying to impute four-fifths of its values.\n\n🔗 **WebLink:** Wikipedia's article on missing data and its different underlying mechanisms.",
@@ -9783,7 +9783,7 @@ const COURSE_DATA = {
         {
           "q": "The image contrasts two error views: Panel A shows one prediction (dot) with its target (star) and the dashed gap between them; Panel B shows five such prediction–target pairs whose gaps all feed into a single diamond marker. Which training terms match the two panels?",
           "options": [
-            "Panel A = **Loss**; Panel B = **Cost** (the batch average)",
+            "Panel A = **Loss**; Panel B = **Cost**, the batch average",
             "Panel A = **Cost**; Panel B = **Loss**, the reverse",
             "Panel A = the **weight update**; Panel B = the **forward pass**",
             "Both of the panels show the **learning rate**"
@@ -12750,7 +12750,7 @@ const COURSE_DATA = {
             "mu is the minimum value; sigma is the maximum value",
             "mu is the median; sigma is the range of the data",
             "mu is the sample size; sigma is the confidence level",
-            "mu is the mean (center); sigma is the standard deviation (spread)"
+            "mu is the mean; sigma is the standard deviation"
           ],
           "answer": 3,
           "note": "**Correct:** Mu is the **mean**, it sets where the peak/center of the bell curve sits. Sigma is the **standard deviation**, it controls how wide or narrow the bell curve is (how spread out the data is around the mean).\n\n**Wrong:**\n- *\"mu is the median, sigma is the range\"*: for a Normal distribution the mean and median actually coincide (due to symmetry), but mu is formally defined as the mean, and sigma is standard deviation, not the full range of the data\n- *\"mu is sample size, sigma is confidence level\"*: sample size and confidence level are separate concepts used later when building confidence intervals, they aren't parameters of the Normal distribution's own formula\n- *\"mu is minimum, sigma is maximum\"*: the Normal distribution technically extends infinitely in both directions, it has no strict minimum or maximum value\n\n**Further Explanation:** Because the Normal distribution is a two-parameter family, knowing just mu and sigma is enough to fully describe the entire curve.\n\n🔗 **WebLink:** Wikipedia's article on the normal distribution and its parameters.",
@@ -14290,7 +14290,7 @@ const COURSE_DATA = {
           "options": [
             "The series is stationary as it stands",
             "The series has no seasonality at all",
-            "The series is not stationary (unit root)",
+            "The series is not stationary, a unit root",
             "The series has no missing values"
           ],
           "answer": 2,
@@ -15818,7 +15818,7 @@ const COURSE_DATA = {
             "The **dataset changes** between runs, which explains the different colorings",
             "Run C is always preferable because **more clusters** always mean a better fit",
             "K-Means chooses the number of clusters **automatically**, so all three runs are equivalent",
-            "**Choosing K matters**: too small merges clusters (Run A), too large **fragments** them (Run C)"
+            "**Choosing K matters**: too small merges clusters, too large **fragments** them"
           ],
           "answer": 3,
           "note": "**Correct:** The three runs show why **choosing K matters**: too small merges real groups (A), too large fragments them (C), well-chosen recovers the natural structure (B). Elbow and silhouette exist to find that middle.\n\n**Wrong:**\n- *\"chooses K automatically\"*: K-Means returns exactly the K you request: never more, never fewer\n- *\"dataset changes\"*: same points in all panels; only K differs\n- *\"more clusters always better\"*: at the extreme, K = n gives inertia 0 and zero insight\n\n**Further Explanation:** This same principle (prefer the simplest model/K that adequately explains the data) reappears throughout ML, from choosing polynomial degree in Topic 3 to choosing K here.\n\n🔗 **WebLink:** Wikipedia's article on Occam's razor.",
@@ -16533,7 +16533,7 @@ const COURSE_DATA = {
         {
           "q": "For a set of embedding vectors that have all been **normalized to unit length**, what is true about ranking by cosine similarity versus ranking by Euclidean distance?",
           "options": [
-            "They produce the **identical ranking**, because for unit vectors squared Euclidean distance equals 2 × (1 − cosine similarity)",
+            "They produce the **identical ranking**, since squared Euclidean distance is 2 × (1 − cosine similarity) for unit vectors",
             "Cosine similarity and Euclidean distance always **disagree** with each other once the vectors have been normalized",
             "Normalization makes Euclidean distance **undefined**, so only cosine similarity can be used on unit vectors",
             "Ranking by Euclidean distance requires **re-normalizing** every one of the vectors a second time before comparing"
@@ -16784,7 +16784,7 @@ const COURSE_DATA = {
             "Encapsulation practices",
             "Static type checking",
             "Object serialization technique",
-            "DRY (don't repeat yourself)"
+            "DRY, don't repeat yourself"
           ],
           "answer": 3,
           "note": "**Correct:** This is exactly the scenario DRY targets, pulling the shared logic out into a single reusable function that all six call sites use instead of maintaining six near identical copies.\n\n**Wrong:**\n- *\"Encapsulation practices\"*: encapsulation is about bundling data with the methods that manage it, not about duplicated code blocks.\n- *\"Static type checking\"*: static typing concerns declaring and checking variable types, unrelated to duplication.\n- *\"Object serialization technique\"*: serialization is about converting objects to a storable or transmittable format, unrelated here.\n\n**Further Explanation:** Duplicated code is a maintenance risk because a bug fix or requirement change has to be applied to every copy, and it is easy to update five of the six and miss one.\n\n🔗 **WebLink:** Wikipedia's article on the DRY principle.",
@@ -18249,7 +18249,7 @@ const COURSE_DATA = {
           "options": [
             "True, but only for the models that reference a source() rather than another ref(), which always build as tables",
             "True, dbt always writes a physical table for every model in the project in order to guarantee query performance",
-            "False, the default materialization is a view, a physical table only forms if the model is explicitly configured as table (or incremental)",
+            "False, the default materialization is a view; a physical table only forms if the model is explicitly configured as table or incremental",
             "False, dbt never creates any object in the warehouse at all unless it is explicitly told to materialize one"
           ],
           "answer": 2,
@@ -19080,7 +19080,7 @@ const COURSE_DATA = {
           "options": [
             "Evaluation and testing are the same process, just performed at different points in the pipeline",
             "Evaluation inspects the source code for bugs, while testing inspects the training data for quality",
-            "Evaluation checks model accuracy (data scientist's job); testing checks system behavior for users (ML engineer's job)",
+            "Evaluation checks model accuracy, the data scientist's job; testing checks system behavior, the ML engineer's job",
             "Evaluation happens only after deployment in production, while testing happens only before deployment"
           ],
           "answer": 2,
@@ -19554,7 +19554,7 @@ const COURSE_DATA = {
         {
           "q": "A retraining pipeline's promotion gate is: skip promotion if new_f1 is less than current_f1 minus 0.02. The current champion has F1 of 0.91 and the newly trained candidate scores F1 of 0.87. Does the candidate get promoted?",
           "options": [
-            "No, because 0.87 is below the 0.89 threshold (0.91 minus 0.02)",
+            "No, because 0.87 is below the 0.89 threshold of 0.91 minus 0.02",
             "Yes, because 0.87 is higher than 0.74",
             "Yes, any newly trained model is promoted automatically regardless of its score",
             "No, because the candidate's F1 must exceed the champion's F1 exactly"
@@ -19945,7 +19945,7 @@ const COURSE_DATA = {
           "options": [
             "A pytest assertion failed",
             "The requested command was not found on the runner",
-            "The runner ran out of memory (OOM)",
+            "The runner ran out of memory",
             "A linting rule was violated"
           ],
           "answer": 2,

@@ -3,10 +3,13 @@
 //   1. Length bias: the correct option is noticeably longer than the AVERAGE wrong option,
 //      which lets a student score above chance by just picking the longest string.
 //   2. Position bias: the correct option lands on the same index far more than chance.
-//   3. Formatting bias: markdown emphasis (bold, inline code, italics) singles the correct
-//      option out, so it can be spotted without reading any of the text. This one is easy to
-//      introduce by accident, because emphasising the key phrase of a well-written answer is
-//      a natural thing to do while the throwaway distractors get left as plain prose.
+//   3. Formatting bias: markdown emphasis (bold, inline code, italics) or a trailing
+//      parenthetical gloss singles the correct option out, so it can be spotted without
+//      reading any of the text. This one is easy to introduce by accident, because
+//      emphasising or explaining the key phrase of a well-written answer is a natural thing
+//      to do while the throwaway distractors get left as plain prose. Checked in both
+//      directions: a style unique to the correct option, and a style on every distractor but
+//      absent from the correct one.
 // Doesn't touch data.js, just reports.
 //
 // Note: the length check uses the AVERAGE distractor length, not the single longest wrong
@@ -40,10 +43,24 @@ function stripMd(s) {
 // bold's `**` and anything inside a code span, otherwise a glob pattern such as
 // `test_*.py` reads as an italic marker and reports a tell that isn't there.
 const stripCodeSpans = s => s.replace(/`[^`]*`/g, '');
+
+// A trailing "(...)" explaining the answer is the same odd-one-out tell as bold,
+// just punctuation instead of markup. Two exclusions keep it from firing on
+// things that only look like a gloss:
+//   - it must be preceded by whitespace, so a call such as
+//     `pytest.raises(ZeroDivisionError)` does not count
+//   - it must contain a word of 3+ letters, so maths does not count:
+//     "squeezes any input into (0, 1)", "(n < 30)", '("4 to 1")'
+const trailingGloss = s => {
+  const m = s.trim().match(/(^|\s)\(([^()]*)\)$/);
+  return !!m && /[A-Za-z]{3,}/.test(m[2]);
+};
+
 const EMPHASIS = {
   bold: s => /\*\*/.test(s),
   'inline code': s => /`/.test(s),
   italics: s => /\*/.test(stripCodeSpans(s).replace(/\*\*/g, '')),
+  'trailing gloss': trailingGloss,
 };
 
 const onlyIds = process.argv[2]
