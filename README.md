@@ -21,7 +21,7 @@ cohort. No build step, no dependencies, no backend, no login. The whole app is
 | File | Purpose |
 |------|---------|
 | `index.html` | The entire app: styles, markup shell, and all JS logic. |
-| `data.js` | All content: `COURSE_DATA = { courseName, topics: [...] }`. Loaded via `<script src="data.js?v=N">`. |
+| `data.js` | All content: `COURSE_DATA = { courseName, topics: [...] }`, stored pretty-printed (2-space indent) so changes are diffable and mergeable. Loaded via `<script src="data.js?v=N">`. |
 | `toc.yml` | Controls which topics are visible to students (see "Hiding a topic"). |
 | `topic-repo-map.md` | Maps each topic to the repo notebook its repo questions are grounded in. |
 | `check-answer-balance.js` | Data check for the three answer-balance tells: length, position, and formatting bias. |
@@ -188,15 +188,36 @@ were left alone rather than folded into the length cleanup. Fixing them, and the
 adding a trailing-parenthetical test as a fourth check, is a self-contained piece
 of work.
 
-### A note on `data.js` and merge conflicts
+### `data.js` is stored pretty-printed, keep it that way
 
-`data.js` is written as a single line of about 2.2 MB. Git therefore treats *any*
-two edits to it as touching the same line, so two branches that both change
-content conflict even when the changes are unrelated, and the conflict cannot be
-resolved by inspection. If you hit this, do not eyeball it: confirm which side is
-newer by comparing blob hashes, resolve wholesale in favour of that side, and
-then verify by checking that the resolved tree hash matches the tree you expected
-to keep. Storing the file pretty-printed would remove the problem entirely.
+`data.js` is written as `const COURSE_DATA = ` followed by
+`JSON.stringify(data, null, 2)`, so it is about 20,700 lines rather than one. Any
+script that rewrites the file must reproduce that exact form:
+
+```js
+fs.writeFileSync('data.js', 'const COURSE_DATA = ' + JSON.stringify(data, null, 2) + ';\n');
+```
+
+A bare `JSON.stringify(data)` collapses it back onto one line. It was stored that
+way until 2026-07-26, and the cost was not cosmetic. Git is line-based, so a
+one-line file makes *every* edit "line 1 changed": two branches editing unrelated
+topics then conflict by definition, and the conflict cannot be resolved by
+inspection. Measured on this repo, with edits to two different topics that do not
+overlap at all:
+
+| | one line | pretty-printed |
+|---|---|---|
+| Unrelated edits to different topics | conflict, 3 blocks | merges cleanly |
+| Diff to read for a one-word fix | 4,447,188 bytes | 582 bytes |
+
+Note that `git diff --stat` reports "1 insertion, 1 deletion" in *both* cases,
+which is why the problem hid for so long: it looks fine until you try to read the
+diff and get the whole old file followed by the whole new file.
+
+The cost of the pretty form is about 240 KB on disk and roughly 2 percent once
+gzipped (610 KB to 625 KB), which is what students actually download. In exchange,
+content changes are reviewable as ordinary line diffs and `git blame` works on
+individual questions.
 
 To preview locally, serve the folder with a static server (e.g.
 `python3 -m http.server 8000`) and open the printed URL, then click through both

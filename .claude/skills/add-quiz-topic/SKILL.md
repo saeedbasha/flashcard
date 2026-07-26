@@ -108,7 +108,15 @@ Flashcard notes do not use the Correct/Wrong structure; they are a direct answer
 
 ## 3. Merge into `data.js`
 
-Append or edit the topic object in `COURSE_DATA.topics`. Do this as one deliberate edit, not something delegated to a subagent to merge unsupervised. `data.js` is a single minified `const COURSE_DATA = {...};`; a safe way to edit programmatically is to load it via Node's `vm` module, mutate the object, and rewrite the file with `JSON.stringify` (this preserves untouched topics byte for byte). When replacing a specific string, assert it matches exactly once before writing, and guard that the replacement introduces no em dash or double hyphen in prose.
+Append or edit the topic object in `COURSE_DATA.topics`. Do this as one deliberate edit, not something delegated to a subagent to merge unsupervised. A safe way to edit programmatically is to load `data.js` via Node's `vm` module, mutate the object, and rewrite the file (this preserves untouched topics byte for byte). When replacing a specific string, assert it matches exactly once before writing, and guard that the replacement introduces no em dash or double hyphen in prose.
+
+**Write it back pretty-printed**, exactly as it is stored:
+
+```js
+fs.writeFileSync('data.js', 'const COURSE_DATA = ' + JSON.stringify(data, null, 2) + ';\n');
+```
+
+A bare `JSON.stringify(data)` collapses the whole file onto one line. It used to be stored that way, and it made every concurrent change conflict irreconcilably, because Git saw two edits to the same single line no matter how unrelated they were. The two-space form keeps changes reviewable as ordinary line diffs and costs about 2 percent once gzipped.
 
 ## 4. Bump the cache-buster
 
