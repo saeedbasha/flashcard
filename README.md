@@ -172,7 +172,7 @@ deploys. Every push to `main` redeploys, and you can trigger one by hand from th
 **Actions** tab.
 
 One-time setup, in **Settings, then Pages**: set **Source** to **GitHub Actions**,
-not "Deploy from a branch". From the CLI:
+NOT "Deploy from a branch". From the CLI:
 
 ```bash
 gh api -X PUT repos/<owner>/<repo>/pages -f build_type=workflow
