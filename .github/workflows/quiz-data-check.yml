@@ -3,6 +3,10 @@ name: quiz-data-check
 # Runs the answer-balance validation on any change that could affect the quiz
 # data, so bias regressions are caught in the PR rather than after merge.
 on:
+  # Lets the check be run on demand against any branch. Without this the only
+  # ways to get a result are opening a PR or pushing to main, so a branch whose
+  # PR has already merged has no way to report at all.
+  workflow_dispatch:
   pull_request:
     paths:
       - 'data.js'
