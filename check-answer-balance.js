@@ -21,6 +21,7 @@ const fs = require('fs');
 const vm = require('vm');
 
 const THRESHOLD_RATIO = 1.3; // flag when the correct option is >= 30% longer than the AVERAGE wrong option
+const MIN_LENGTH_FOR_RATIO = 12; // below this the correct option is a single word, where a length ratio means nothing
 const POSITION_SHARE_THRESHOLD = 0.4; // flag a topic if one answer index accounts for >= 40% of its questions
 
 const src = fs.readFileSync('data.js', 'utf8');
@@ -52,6 +53,7 @@ const onlyIds = process.argv[2]
 let totalChecked = 0;
 let singleLongestCount = 0; // how often the correct option is the single longest ("pick the longest" would win)
 const flagged = [];
+const tooShortToJudge = [];
 const positionSkewedTopics = [];
 const overallPositionCounts = {};
 const formatFlagged = [];
@@ -96,6 +98,20 @@ for (const topic of COURSE_DATA.topics) {
 
     const avgRatio = correctLen / avgWrong;
 
+    // A ratio over one-word options is not a tell anyone can act on: "Median"
+    // beats "Mean" by two characters and scores 1.38x, but no reader picks an
+    // answer by counting letters at that scale. Below the floor the ratio is
+    // measuring the metric's own resolution, not the question, so skip it and
+    // report the skip rather than quietly passing it.
+    if (correctLen < MIN_LENGTH_FOR_RATIO) {
+      // Only worth reporting the ones the floor actually rescues; the rest were
+      // passing anyway and would just be noise.
+      if (avgRatio >= THRESHOLD_RATIO) {
+        tooShortToJudge.push({ topicId: topic.id, questionNumber: idx + 1, q: item.q, correctLen, avgWrong, avgRatio });
+      }
+      return;
+    }
+
     if (avgRatio >= THRESHOLD_RATIO) {
       flagged.push({
         topicId: topic.id,
@@ -129,6 +145,12 @@ console.log(`Flagged ${flagged.length} question(s) where the correct answer is >
 for (const f of flagged) {
   console.log(`[Topic ${f.topicId} "${f.topicName}" Q${f.questionNumber}] ${f.avgRatio.toFixed(2)}x avg (correct ${f.correctLen} chars, avg wrong ${f.avgWrong.toFixed(0)} chars)${f.isSingleLongest ? ' [also the single longest option]' : ''}`);
   console.log(`  ${f.q}`);
+}
+if (tooShortToJudge.length) {
+  console.log(`\nExempted ${tooShortToJudge.length} question(s) that exceed ${THRESHOLD_RATIO}x but whose correct option is under ${MIN_LENGTH_FOR_RATIO} chars, where the ratio is noise rather than a tell:`);
+  for (const s of tooShortToJudge) {
+    console.log(`  [Topic ${s.topicId} Q${s.questionNumber}] ${s.avgRatio.toFixed(2)}x but only ${s.correctLen} chars vs avg wrong ${s.avgWrong.toFixed(1)}: ${s.q.slice(0, 70)}`);
+  }
 }
 const longestPct = totalChecked ? (100 * singleLongestCount / totalChecked).toFixed(1) : '0.0';
 console.log(`\n"Pick the single longest option" would score ${singleLongestCount}/${totalChecked} (${longestPct}%). Random chance is ~25%; well above that means the correct answer is too often the longest.`);
