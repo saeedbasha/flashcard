@@ -50,6 +50,7 @@ npm test    # no dependencies to install
 | `.githooks/pre-commit` | Opt-in hook that runs the check on commits touching `data.js`. |
 | `.github/workflows/deploy-pages.yml` | Deploys to GitHub Pages on every push to `main`. |
 | `.github/workflows/quiz-data-check.yml` | Runs the content check on pull requests, on pushes to `main`, and on demand. |
+| `ARCHITECTURE.md` | Diagrams: what the browser loads, and how a content edit reaches the live site. |
 | `DESIGN.md`, `PRODUCT.md` | Design system and product/brand guidelines. |
 
 ## Updating course content
